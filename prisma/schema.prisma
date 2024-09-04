@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SymmetryGroup {
+  None
+  Rotation2Fold
+  Rotation4Fold
+  Mirror90
+  Mirror45
+  Rotation2FoldMirror
+  All
+}
+
+model Polyomino {
+  n                     Int
+  canonized_form        Bytes         @id
+  is_processed_for_next Boolean       @default(false)
+  symmetry_group        SymmetryGroup @default(None)
+
+  @@index([n, is_processed_for_next, canonized_form])
+  @@index([n, symmetry_group, canonized_form])
+}
