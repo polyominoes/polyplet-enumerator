@@ -16,7 +16,7 @@ export async function main(upTo: number): Promise<void> {
       const buffer = toBuffer(trivialOnlySolution);
       await prisma.polyomino.upsert({
         where: { canonized_form: buffer },
-        create: { n: i, canonized_form: buffer, is_processed_for_next: false },
+        create: { n: i, canonized_form: buffer, symmetry_group: "All" },
         update: {},
       });
     } else {
@@ -27,17 +27,21 @@ export async function main(upTo: number): Promise<void> {
         if (!job) break;
         await prisma.$transaction(async (tx) => {
           const previous = fromBuffer(job.canonized_form);
-          for (const toInsert of Array.from(new Array(previous.length)).flatMap(
-            (_, i) => [
-              ...validate([...previous, [previous[i][0] + 1, previous[i][1]]]),
-              ...validate([...previous, [previous[i][0] - 1, previous[i][1]]]),
-              ...validate([...previous, [previous[i][0], previous[i][1] + 1]]),
-              ...validate([...previous, [previous[i][0], previous[i][1] - 1]]),
-            ]
-          )) {
+          for (const [buffer, symmetryGroup] of Array.from(
+            new Array(previous.length)
+          ).flatMap((_, i) => [
+            ...validate([...previous, [previous[i][0] + 1, previous[i][1]]]),
+            ...validate([...previous, [previous[i][0] - 1, previous[i][1]]]),
+            ...validate([...previous, [previous[i][0], previous[i][1] + 1]]),
+            ...validate([...previous, [previous[i][0], previous[i][1] - 1]]),
+          ])) {
             await prisma.polyomino.upsert({
-              where: { n: i, canonized_form: toInsert },
-              create: { n: i, canonized_form: toInsert },
+              where: { n: i, canonized_form: buffer },
+              create: {
+                n: i,
+                canonized_form: buffer,
+                symmetry_group: symmetryGroup,
+              },
               update: {},
             });
           }

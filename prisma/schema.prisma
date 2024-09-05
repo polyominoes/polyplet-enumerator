@@ -9,11 +9,12 @@ datasource db {
 
 enum SymmetryGroup {
   None
-  Rotation2Fold
-  Rotation4Fold
   Mirror90
   Mirror45
-  Rotation2FoldMirror
+  Rotation2Fold
+  Rotation2FoldMirror90
+  Rotation2FoldMirror45
+  Rotation4Fold
   All
 }
 
@@ -21,7 +22,7 @@ model Polyomino {
   n                     Int
   canonized_form        Bytes         @id
   is_processed_for_next Boolean       @default(false)
-  symmetry_group        SymmetryGroup @default(None)
+  symmetry_group        SymmetryGroup
 
   @@index([n, is_processed_for_next, canonized_form])
   @@index([n, symmetry_group, canonized_form])
